@@ -101,7 +101,7 @@ await sleep(20000);
   console.log(response.data);
      
       } else {
-        console.log('no transaction found so no voted added')
+        console.log('no transaction found so no vote added')
       }
 
 
@@ -204,11 +204,11 @@ await sleep(20000);
 
       {selectedCard && (
      <Box mt={8} p={6} rounded="md" boxShadow="md" bg="#211F1F">
-     <Heading mb={4} fontFamily="Kanit"  width="64%" margin="auto"  textAlign="center" fontSize={{ base: 'xl', md: '2xl' }} bg="#0AF9F9" padding="20px" borderRadius="43px">
+     <Heading mb={4} fontFamily="Kanit"   width={{ base: '100%', md: 'auto' }} margin="auto"  textAlign="center" fontSize={{ base: 'xl', md: '2xl' }} bg="#0AF9F9" padding="20px" borderRadius="43px">
        Steps To Vote {selectedCard.title}
      </Heading>
     
-     <Box width="64%" margin="43px auto" bg="#0AF9F9"  borderRadius="43px"  p={4}   boxShadow="md">
+     <Box  width={{ base: '100%', md: 'auto' }} margin="43px auto" bg="#0AF9F9"  borderRadius="43px"  p={4}   boxShadow="md">
       <Box bg="#211F1F" padding="27px" borderRadius="39px">
       <Text  mb={2} fontFamily="Kanit"  fontWeight="bold" color="white" fontSize="lg" textAlign="center">
          Step 1 : Copy this Wallet Address
@@ -216,7 +216,7 @@ await sleep(20000);
        <Text  fontFamily="Abel" padding="10px" borderRadius="25px" bg="black" color="white" textAlign="center">7Uh8S8FEpQLwPBGYXiveRMA8YTzDGLTXPFvnSb8sRtDc</Text>
       </Box>
      </Box>
-     <Box width="64%" margin="43px auto" bg="#0AF9F9"  borderRadius="43px"  p={4}   boxShadow="md">
+     <Box  width={{ base: '100%', md: 'auto' }} margin="43px auto" bg="#0AF9F9"  borderRadius="43px"  p={4}   boxShadow="md">
      <Box bg="#211F1F" padding="27px" borderRadius="39px">
        <Text  fontFamily="Kanit" mb={2} fontWeight="bold" color="white" fontSize="lg" textAlign="center">
          Step 2 : Click the Submit Button and Pay 0.006 Sol
@@ -228,7 +228,7 @@ await sleep(20000);
        {isLoading ? (
          <CircularProgress isIndeterminate color="#211F1F" />
        ) : (
-         <Button colorScheme="blue" onClick={handleSubmit}>
+         <Button width="35%" fontFamily="Kanit"  borderRadius="20px"  bg="#0AF9F9" onClick={handleSubmit}>
            Submit
          </Button>
        )}
