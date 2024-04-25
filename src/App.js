@@ -19,6 +19,7 @@ const CardSection = () => {
   const [votes, setVotes] = useState({ trump: 0, biden: 0, obama: 0 });
   const [eventmessage, setEventmessage] = useState("");
 
+
   const cardData = [
     { id: 1, title: 'Trump', description: 'Information', vote: 'trump', imageLink: 'https://chocolate-bizarre-rhinoceros-925.mypinata.cloud/ipfs/QmbGqsYY8EhbS22uiyqtA5qSksRQ91rYFx7EVFYGkbJkuA', voteCount: votes.trump },
     { id: 2, title: 'Biden', description: 'Information', vote: 'biden', imageLink: 'https://chocolate-bizarre-rhinoceros-925.mypinata.cloud/ipfs/QmWkCxheb9EEnHF26LKLjudXFHXnTxoiUg4p3iBY5sFUd2', voteCount: votes.biden },
@@ -99,9 +100,11 @@ await sleep(20000);
   });
   // Handle the response from the server
   console.log(response.data);
+  setEventmessage("Vote confirmed!");
      
       } else {
         console.log('no transaction found so no vote added')
+        setEventmessage("Vote failed: No transaction found.");
       }
 
 
@@ -171,6 +174,7 @@ await sleep(20000);
     modules={[EffectCoverflow, Pagination]}
     className="mySwiper"
     loop={true}
+    
   >
     {cardData.map((card) => (
       <SwiperSlide key={card.id}>
@@ -233,6 +237,14 @@ await sleep(20000);
          </Button>
        )}
      </Flex>
+     {eventmessage && (
+  <Box textAlign="center" mt={4}>
+    <Text color={eventmessage.includes("confirmed") ? "green" : "red"}>
+      {eventmessage}
+    </Text>
+  </Box>
+)}
+
    </Box>
    
       )}
