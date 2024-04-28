@@ -1,24 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Flex, Heading, Stack, Text, Input, Button, CircularProgress } from '@chakra-ui/react';
-import axios from 'axios';
+import { Box, Flex, Heading, Text, Button, CircularProgress } from '@chakra-ui/react';
 import { Swiper, SwiperSlide } from 'swiper/react';
+import { createClient } from '@supabase/supabase-js';
 import 'swiper/css';
 import 'swiper/css/effect-coverflow';
 import 'swiper/css/pagination';
 import './App.css';
 import { EffectCoverflow, Pagination } from 'swiper/modules';
-import GoogleFonts from 'react-google-fonts';
 import GoogleFontLoader from 'react-google-font-loader';
 // Sample card data
 import { Connection, PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 const CardSection = () => {
   const [selectedCard, setSelectedCard] = useState(null);
-  const [walletAddress, setWalletAddress] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [votes, setVotes] = useState({ trump: 0, biden: 0, obama: 0 });
   const [eventmessage, setEventmessage] = useState("");
 
+  const supabaseClient = createClient(
+    'https://ddulendmmwvosojiudpj.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWxlbmRtbXd2b3Nvaml1ZHBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTM4OTU0NzEsImV4cCI6MjAyOTQ3MTQ3MX0.lqitb7qGt0GB_oq1WkZ5ZOlvve-xsNKfEv9i00CkVL4'
+  );
 
   const cardData = [
     { id: 1, title: 'Trump', description: 'Information', vote: 'trump', imageLink: 'https://chocolate-bizarre-rhinoceros-925.mypinata.cloud/ipfs/QmbGqsYY8EhbS22uiyqtA5qSksRQ91rYFx7EVFYGkbJkuA', voteCount: votes.trump },
@@ -27,13 +29,13 @@ const CardSection = () => {
   ];
   
   const WSS_ENDPOINT = 'wss://white-warmhearted-glitter.solana-devnet.quiknode.pro/d384002c887490a2826bd32dc1400f718df6125c/';
-const HTTP_ENDPOINT = 'https://white-warmhearted-glitter.solana-devnet.quiknode.pro/d384002c887490a2826bd32dc1400f718df6125c/';
-const solanaConnection = new Connection(HTTP_ENDPOINT, { wsEndpoint: WSS_ENDPOINT });
-const ACCOUNT_TO_WATCH = new PublicKey('BJ528wJ6USmJFFr2DegnSnPkJ2mmDBVVrnoziYkJKaSq');
+  const HTTP_ENDPOINT = 'https://white-warmhearted-glitter.solana-devnet.quiknode.pro/d384002c887490a2826bd32dc1400f718df6125c/';
+  const solanaConnection = new Connection(HTTP_ENDPOINT, { wsEndpoint: WSS_ENDPOINT });
+  const ACCOUNT_TO_WATCH = new PublicKey('BJ528wJ6USmJFFr2DegnSnPkJ2mmDBVVrnoziYkJKaSq');
 
-const sleep = (ms) => {
-  return new Promise(resolve => setTimeout(resolve, ms));
-};
+  const sleep = (ms) => {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  };
 
   useEffect(() => {
     fetchData();
@@ -41,8 +43,11 @@ const sleep = (ms) => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/data');
-      const data = response.data;
+      const { data, error } = await supabaseClient.from('solanavoting').select('*');
+      if (error) {
+        console.error('Error fetching data:', error);
+        return;
+      }
       const totalTrump = data.reduce((acc, curr) => acc + (curr.trump || 0), 0);
       const totalBiden = data.reduce((acc, curr) => acc + (curr.biden || 0), 0);
       const totalObama = data.reduce((acc, curr) => acc + (curr.obama || 0), 0);
@@ -53,83 +58,49 @@ const sleep = (ms) => {
   };
 
 
-
-
   const handleCardSelect = (card) => {
     setSelectedCard(card);
   };
 
-  const handleWalletAddressChange = (event) => {
-    setWalletAddress(event.target.value);
-  };
 
   const handleSubmit = async () => {
     try {
       setIsLoading(true);
-    const { vote, imageLink } = selectedCard; 
+    const { vote } = selectedCard; 
     let isEventOccurred = false;
-         // Check for new events
-   // const eventsResponse = await axios.get('http://localhost:4000/events');
-  //  const newEvents = eventsResponse.data;
+  
+    const subscriptionId = await solanaConnection.onAccountChange(
+      ACCOUNT_TO_WATCH,
+       (updatedAccountInfo) => {
+  // New event occurred, proceed with the rest of the functionality
+        console.log(`---Event Notification for ${ACCOUNT_TO_WATCH.toString()}--- \nNew Account Balance:`, updatedAccountInfo.lamports / LAMPORTS_PER_SOL, ' SOL');
+        isEventOccurred = true;
+        console.log('Proceeding with the rest of the functionality');
 
-   // console.log("event frontend is ",newEvents);
+      },
+    "confirmed"
+    );
+      console.log('Starting web socket, subscription ID: ', subscriptionId);
 
-// Set up Solana account change subscription
-const subscriptionId = await solanaConnection.onAccountChange(
-  ACCOUNT_TO_WATCH,
-  (updatedAccountInfo) => {
-  //  setEventmessage(`---Event Notification for ${ACCOUNT_TO_WATCH.toString()}--- \nNew Account Balance:`, updatedAccountInfo.lamports / LAMPORTS_PER_SOL, ' SOL');
-    // New event occurred, proceed with the rest of the functionality
-    console.log(`---Event Notification for ${ACCOUNT_TO_WATCH.toString()}--- \nNew Account Balance:`, updatedAccountInfo.lamports / LAMPORTS_PER_SOL, ' SOL');
-    isEventOccurred = true;
-    console.log('Proceeding with the rest of the functionality');
+  // Wait for 30 seconds
+    await sleep(30000);
 
-    // ... (Rest of your existing functionality)
-  },
-  "confirmed"
-);
-console.log('Starting web socket, subscription ID: ', subscriptionId);
+  // Check if an event occurred within the timeout period
+  if (isEventOccurred) {
 
-// Wait for 20 seconds
-await sleep(20000);
+    const { error } = await supabaseClient.from('solanavoting').insert([{ [vote]: 1 }]);
 
- // Check if an event occurred within the timeout period
- if (isEventOccurred) {
-  const response = await axios.post('http://localhost:5000/api/store-wallet-address', {
-    vote,
-  });
-  // Handle the response from the server
-  console.log(response.data);
+  console.log(error);
   setEventmessage("Vote confirmed!");
      
       } else {
         console.log('no transaction found so no vote added')
         setEventmessage("Vote failed: No transaction found.");
       }
-
-
-
-     // const latestWalletAddress = await axios.get('http://localhost:5000/api/fetch-wallet-address');
-
-      // Update the walletAddress state with the latest wallet address
-    //  setWalletAddress(latestWalletAddress.data);
-    //  console.log("your wallet address",latestWalletAddress.data)
-    
-
-
-     // Make a POST request to the minting API
-   //   const mintResponse = await axios.post('http://localhost:4000/mint', {
-   //     mint_To: walletAddress,
-   //     image_Link: imageLink
-   //   });
-    //  console.log(mintResponse);
-
-     
     } catch (error) {
-      // Handle any errors that occurred during the API call
       console.error(error);
     }finally {
-      setIsLoading(false); // Set loading to false when submission completes
+      setIsLoading(false); 
     }
   };
 
@@ -174,7 +145,6 @@ await sleep(20000);
     modules={[EffectCoverflow, Pagination]}
     className="mySwiper"
     loop={true}
-    
   >
     {cardData.map((card) => (
       <SwiperSlide key={card.id}>
